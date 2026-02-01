@@ -56,10 +56,11 @@ function App() {
                   }>
 
                       <Route index element={<Dashboard />} />
-                  </Route>
+
                   <Route path="subjects" >
                         <Route index element={<SubjectList/>}/>
                         <Route path='create' element={<SubjectCreate/>}/>
+                  </Route>
                   </Route>
 
               </Routes>
