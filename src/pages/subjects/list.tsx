@@ -1,16 +1,16 @@
-import React, {useMemo, useState} from 'react'
-import {ListView} from "@/components/refine-ui/views/list-view.tsx";
-import {Breadcrumb} from "@/components/refine-ui/layout/breadcrumb.tsx";
-import {Search} from "lucide-react";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
-import {DEPARTMENT_OPTIONS} from "@/constants";
-import {CreateButton} from "@/components/refine-ui/buttons/create.tsx";
-import {DataTable} from "@/components/refine-ui/data-table/data-table.tsx";
-import {useTable} from "@refinedev/react-table";
-import {Subject} from "@/types";
-import {ColumnDef} from "@tanstack/react-table";
-import {Badge} from "@/components/ui/badge.tsx";
-import {Input} from "@/components/ui/input.tsx";
+import React, { useMemo, useState } from 'react'
+import { ListView } from "@/components/refine-ui/views/list-view.tsx";
+import { Breadcrumb } from "@/components/refine-ui/layout/breadcrumb.tsx";
+import { Search } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { DEPARTMENT_OPTIONS } from "@/constants";
+import { CreateButton } from "@/components/refine-ui/buttons/create.tsx";
+import { DataTable } from "@/components/refine-ui/data-table/data-table.tsx";
+import { useTable } from "@refinedev/react-table";
+import { Subject } from "@/types";
+import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Input } from "@/components/ui/input.tsx";
 
 const SubjectList = () => {
 
@@ -19,14 +19,15 @@ const SubjectList = () => {
 
     const departmentFilters =
         selectedDepartment === 'all' ? [] :
-        [{
-        field: 'department', operator: 'eq' as const, value: selectedDepartment}];
+            [{
+                field: 'department', operator: 'eq' as const, value: selectedDepartment
+            }];
     const searchFilters =
-        searchQuery ? [{field: 'name', operator: 'containsString' as const, value: searchQuery}] : [];
+        searchQuery ? [{ field: 'name', operator: 'contains' as const, value: searchQuery }] : [];
 
     // @ts-ignore
     const subjectTable = useTable<Subject>({
-        columns:useMemo<ColumnDef<Subject>[]>(() =>[
+        columns: useMemo<ColumnDef<Subject>[]>(() => [
             {
                 id: "code",
                 accessorKey: "code",
@@ -63,26 +64,26 @@ const SubjectList = () => {
                     return <span className="truncate line-clamp-2">{value ?? "No description"}</span>;
                 },
             },
-        ],[]),
+        ], []),
 
         refineCoreProps: {
-            resource:'subjects',
-            pagination:{pageSize: 10,mode:'server'},
-            filters:{
+            resource: 'subjects',
+            pagination: { pageSize: 10, mode: 'server' },
+            filters: {
                 permanent: [...departmentFilters, ...searchFilters],
             },
-            sorters:{
-                initial:[
-                    {field:'id',order:"desc"},
+            sorters: {
+                initial: [
+                    { field: 'id', order: "desc" },
                 ]
             }
         }
 
     });
-    
+
     return (
         <ListView>
-            <Breadcrumb/>
+            <Breadcrumb />
             <h1 className="page-title">Subjects</h1>
             <div className="intro-row">
                 <p>Quick access to essentil and management tools.</p>
@@ -100,10 +101,10 @@ const SubjectList = () => {
                     </div>
                     <div className="flex gap-2  w-full sm:w-auto">
                         <Select value={selectedDepartment}
-                                onValueChange={setSelectedDepartment}>
-                                <SelectTrigger>
-                                        <SelectValue placeholder="Filter by department"/>
-                                </SelectTrigger>
+                            onValueChange={setSelectedDepartment}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filter by department" />
+                            </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Department</SelectItem>
                                 {DEPARTMENT_OPTIONS.map(department => (
@@ -113,7 +114,7 @@ const SubjectList = () => {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <CreateButton/>
+                        <CreateButton />
                     </div>
                 </div>
             </div>
