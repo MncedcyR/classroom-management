@@ -5,7 +5,7 @@ import { useBack } from "@refinedev/core";
 import { Separator } from "@/components/ui/separator.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm } from "@refinedev/react-hook-form"
 import { classSchema } from "@/lib/schema.ts";
 import * as z from "zod";
 
@@ -29,7 +29,11 @@ import UploadWidget from "@/components/upload-widget";
 const Create = () => {
     const back = useBack();
 
-    const form = useForm({
+    const {
+        saveButtonProps,
+        refineCore: { onFinish, formLoading },
+        ...form
+    } = useForm({
         resolver: zodResolver(classSchema),
         refineCoreProps: {
             resource: "classes",
@@ -39,17 +43,9 @@ const Create = () => {
 
     const {
         handleSubmit,
-        formState: { isSubmitting, errors },
+        formState: { errors },
         control,
     } = form;
-
-    const onSubmit = async (values: z.infer<typeof classSchema>) => {
-        try {
-            console.log(values);
-        } catch (error) {
-            console.error("Error creating class:", error);
-        }
-    };
 
     const teachers = [
         {
@@ -75,15 +71,15 @@ const Create = () => {
         },
     ];
 
-    const bannerPublicId = form.watch("bannerCldId");
+    const bannerPublicId = form.watch("bannerCldPubId");
 
     const setBannerImage = (file, field) => {
         if (file) {
             field.onChange(file.url);
-            form.setValue("bannerCldId", file.publicId, { shouldDirty: true, shouldValidate: true });
+            form.setValue("bannerCldPubId", file.publicId, { shouldDirty: true, shouldValidate: true });
         } else {
             field.onChange('');
-            form.setValue("bannerCldId", '', { shouldDirty: true, shouldValidate: true });
+            form.setValue("bannerCldPubId", '', { shouldDirty: true, shouldValidate: true });
         }
     }
 
@@ -111,7 +107,7 @@ const Create = () => {
 
                     <CardContent className="mt-7">
                         <Form {...form}>
-                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                            <form onSubmit={handleSubmit(onFinish)} className="space-y-5">
                                 <FormField
                                     control={control}
                                     name="bannerUrl"
@@ -131,7 +127,7 @@ const Create = () => {
                                             </FormControl>
                                             <FormMessage />
                                             {errors.bannerUrl && <p className="text-sm text-destructive">
-                                                {errors.bannerCldId?.message?.toString()}</p>}
+                                                {errors.bannerCldPubId?.message?.toString()}</p>}
                                         </FormItem>
                                     )}
                                 />
@@ -299,7 +295,7 @@ const Create = () => {
                                 <Separator />
 
                                 <Button type="submit" size="lg" className="w-full">
-                                    {isSubmitting ? (
+                                    {formLoading ? (
                                         <div className="flex gap-1">
                                             <span>Creating Class...</span>
                                             <Loader2 className="inline-block ml-2 animate-spin" />

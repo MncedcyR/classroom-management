@@ -1,7 +1,7 @@
 import { UploadWidgetValue } from "@/types";
 import { UploadCloud } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "react-day-picker";
+import { Button } from "@/components/ui/button";
 
 
 
@@ -20,7 +20,7 @@ const UploadWidget = ({ value = null, onChange, disabled = false }) => {
 
     useEffect(() => {
         onChangeRef.current = onChange;
-    })
+    }, [onChange]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -73,8 +73,29 @@ const UploadWidget = ({ value = null, onChange, disabled = false }) => {
         <div className="space-y-2">
             {
                 preview ? (
-                    <div className="upload-preview">
-                        <img src={preview.url} alt="Preview" />
+                    <div className="upload-preview flex gap-4 items-center">
+                        <img src={preview.url} alt="Preview" className="w-24 h-24 object-cover rounded-md" />
+                        <div className="flex flex-col gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={openWidget}
+                                disabled={disabled}
+                            >
+                                Replace Image
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                onClick={() => {
+                                    setPreview(null);
+                                    if (onChange) onChange(null);
+                                }}
+                                disabled={disabled}
+                            >
+                                Remove Image
+                            </Button>
+                        </div>
                     </div>
                 ) : <div className="upload-dropzone" role="button" tabIndex={0}
                     onClick={openWidget}
@@ -87,7 +108,7 @@ const UploadWidget = ({ value = null, onChange, disabled = false }) => {
                     <div className="upload-prompt">
                         <UploadCloud className="icon" />
                         <p className="text-sm font-medium">Click to upload Image</p>
-                        <p className="text-xs text-muted-foreground">PNG, JPG, GIF or WebP up to 5MB</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG, or WebP up to 5MB</p>
                     </div>
 
                 </div>
