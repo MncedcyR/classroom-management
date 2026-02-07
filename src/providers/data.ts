@@ -2,6 +2,10 @@ import { createDataProvider, CreateDataProviderOptions } from "@refinedev/rest";
 import { BACKEND_BASE_URL } from "@/constants";
 import { ListResponse } from "@/types";
 
+if (!BACKEND_BASE_URL) {
+  throw new Error("BACKEND_BASE_URL is not defined");
+}
+
 const options: CreateDataProviderOptions = {
   getList: {
     getEndpoint: ({ resource }) => resource,
@@ -22,11 +26,8 @@ const options: CreateDataProviderOptions = {
           if (field === 'department') params.department = value;
           if (field === 'name' || field === 'code') params.search = value;
         }
-
       })
-
       return params;
-
     },
 
     mapResponse: async (response) => {
