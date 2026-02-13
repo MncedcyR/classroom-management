@@ -1,55 +1,66 @@
-import { UploadWidgetValue } from "@/types";
-import { UploadCloud } from "lucide-react";
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from "@/constants";
+import { Trash, UploadCloud } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button";
+import { UploadWidgetProps, UploadWidgetValue } from "@/types";
 
-
-
-const UploadWidget = ({ value = null, onChange, disabled = false }) => {
-
+function UploadWidget({
+    value = null,
+    onChange,
+    disabled = false,
+}: UploadWidgetProps) {
     const widgetRef = useRef<CloudinaryWidget | null>(null);
+    const onChangeRef = useRef(onChange);
+
     const [preview, setPreview] = useState<UploadWidgetValue | null>(value);
     const [deleteToken, setDeleteToken] = useState<string | null>(null);
     const [isRemoving, setIsRemoving] = useState(false);
-    const onChangeRef = useRef(onChange);
 
-    useEffect(() => {
-        setPreview(value);
-        if (!value) setDeleteToken(null);
-    }, [value]);
-
+    // Always keep latest onChange
     useEffect(() => {
         onChangeRef.current = onChange;
     }, [onChange]);
 
+    // Sync external value → internal preview
     useEffect(() => {
-        if (typeof window === 'undefined') return;
+        setPreview(value);
+        if (!value) {
+            setDeleteToken(null);
+        }
+    }, [value]);
+
+    // Initialize Cloudinary widget (client-side only)
+    useEffect(() => {
+        if (typeof window === "undefined") return;
 
         const initializeWidget = () => {
-            if (!window.cloudinary || widgetRef.current) return;
+            if (!window.cloudinary || widgetRef.current) return false;
 
-            widgetRef.current = window.cloudinary.createUploadWidget({
-                cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
-                uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
-                folder: 'uploads',
-                clientAllowedFormats: ['png', 'jpg', 'jpeg', 'webp'],
-                maxFileSize: 5 * 1024 * 1024,
-            }, (error, result) => {
-                if (!error && result && result.event === 'success') {
-                    const payload = {
-                        url: result.info.secure_url,
-                        publicId: result.info.public_id,
-                    };
-                    setPreview(payload);
-                    setDeleteToken(result.info.delete_token ?? null);
+            widgetRef.current = window.cloudinary.createUploadWidget(
+                {
+                    cloudName: CLOUDINARY_CLOUD_NAME,
+                    uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+                    multiple: false,
+                    folder: "uploads",
+                    maxFileSize: 5_000_000,
+                    clientAllowedFormats: ["png", "jpg", "jpeg"],
+                },
+                (error, result) => {
+                    if (!error && result.event === "success") {
+                        const payload: UploadWidgetValue = {
+                            url: result.info.secure_url,
+                            publicId: result.info.public_id,
+                        };
 
-                    onChangeRef.current?.(payload);
+                        setPreview(payload);
+                        setDeleteToken(result.info.delete_token ?? null);
+                        onChangeRef.current?.(payload);
+                    }
                 }
-
-            });
+            );
 
             return true;
-        }
+        };
 
         if (initializeWidget()) return;
 
@@ -59,62 +70,83 @@ const UploadWidget = ({ value = null, onChange, disabled = false }) => {
             }
         }, 500);
 
-        return () => clearInterval(intervalId);
-
+        return () => window.clearInterval(intervalId);
     }, []);
 
     const openWidget = () => {
-        if (!disabled) widgetRef.current?.open();
-    }
+        if (!disabled) {
+            widgetRef.current?.open();
+        }
+    };
 
-    const removeFromCloudinary = async () => { }
+    const removeFromCloudinary = async () => {
+        if (!preview) return;
+
+        setIsRemoving(true);
+
+        try {
+            if (deleteToken) {
+                const params = new URLSearchParams();
+                params.append("token", deleteToken);
+
+                await fetch(
+                    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/delete_by_token`,
+                    {
+                        method: "POST",
+                        body: params,
+                    }
+                );
+            }
+        } catch (error) {
+            console.error("Failed to remove image from Cloudinary", error);
+        } finally {
+            setPreview(null);
+            setDeleteToken(null);
+            onChangeRef.current?.(null);
+            setIsRemoving(false);
+        }
+    };
 
     return (
         <div className="space-y-2">
-            {
-                preview ? (
-                    <div className="upload-preview flex gap-4 items-center">
-                        <img src={preview.url} alt="Preview" className="w-24 h-24 object-cover rounded-md" />
-                        <div className="flex flex-col gap-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={openWidget}
-                                disabled={disabled}
-                            >
-                                Replace Image
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                onClick={() => {
-                                    setPreview(null);
-                                    if (onChange) onChange(null);
-                                }}
-                                disabled={disabled}
-                            >
-                                Remove Image
-                            </Button>
-                        </div>
-                    </div>
-                ) : <div className="upload-dropzone" role="button" tabIndex={0}
+            {preview ? (
+                <div className="upload-preview">
+                    <img src={preview.url} alt="Uploaded file" />
+
+                    <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        onClick={removeFromCloudinary}
+                        disabled={isRemoving || disabled}
+                    >
+                        <Trash className="size-4" />
+                    </Button>
+                </div>
+            ) : (
+                <div
+                    className="upload-dropzone"
+                    role="button"
+                    tabIndex={0}
                     onClick={openWidget}
                     onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
+                        if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             openWidget();
                         }
-                    }}>
+                    }}
+                >
                     <div className="upload-prompt">
                         <UploadCloud className="icon" />
-                        <p className="text-sm font-medium">Click to upload Image</p>
-                        <p className="text-xs text-muted-foreground">PNG, JPG, or WebP up to 5MB</p>
+                        <div>
+                            <p>Click to upload photo</p>
+                            <p>PNG, JPG up to 5MB</p>
+                        </div>
                     </div>
-
                 </div>
-
-            }
+            )}
         </div>
     );
-};
+}
+
 export default UploadWidget;
