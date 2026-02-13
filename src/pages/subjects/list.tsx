@@ -59,10 +59,9 @@ const SubjectList = () => {
                 accessorKey: "description",
                 size: 300,
                 header: () => <p className="column-title">Description</p>,
-                cell: ({ getValue }) => {
-                    const value = getValue<string>();
-                    return <span className="truncate line-clamp-2">{value ?? "No description"}</span>;
-                },
+                cell: ({ getValue }) => (
+                    <span className="truncate line-clamp-2">{getValue<string>()}</span>
+                ),
             },
         ], []),
 
