@@ -23,7 +23,7 @@ export const bannerPhoto = (imageCldPubId: string, name: string) => {
             .image(imageCldPubId)
 
             .resize(
-                fill().width(1200).height(297) // Aspect ratio 5:1
+                fill().width(1200).height(240) // Aspect ratio 5:1
             )
             // Optimize for web
             .delivery(format("auto"))

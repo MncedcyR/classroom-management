@@ -50,9 +50,9 @@ const ClassesShow = () => {
         <ShowView className="class-view class-show">
             <ShowViewHeader resource='classes' title='Class Details' />
             <div className='banner-section'>
-                {bannerUrl ? (
+                {bannerCldPubId ? (
                     <AdvancedImage
-                        alt={name} cldImg={bannerPhoto(bannerCldPubId ?? '', name)} />
+                        alt={name} cldImg={bannerPhoto(bannerCldPubId, name)} />
                 ) : <div className='placeholder' />}
                 <Card>
                     <div className='details-card'>
@@ -68,7 +68,7 @@ const ClassesShow = () => {
                             </Badge>
                         </div>
                     </div>
-                    <div className='deatails-grid'>
+                    <div className='details-grid'>
                         <div className='instructor'>
                             <p>Instructor</p>
                             <div>
