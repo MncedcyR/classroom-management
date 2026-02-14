@@ -38,7 +38,15 @@ const ClassesShow = () => {
             .map((part) => part[0]?.toUpperCase())
             .join('')
 
-    const placeholderUrl = `https://placeholder.co/600x400?text=${encodeURIComponent(teacherInitials || 'NA')}`;
+    // const placeholderUrl = `https://placeholder.co/600x400?text=${encodeURIComponent(teacherInitials || 'NA')}`;
+    const placeholderUrl = `data:image/svg+xml;utf8,${encodeURIComponent(
+        `<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'>
+            <rect width='160' height='160' fill='#E5E7EB'/>
+            <text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' fill='#6B7280' font-size='48' font-family='sans-serif'>
+                ${teacherInitials || 'NA'}
+            </text>
+        </svg>`
+    )}`;
 
     const { bannerUrl, bannerCldPubId, teacher, subject, department, name, description, capacity, status, } = classDetails;
 
@@ -103,6 +111,7 @@ const ClassesShow = () => {
                                     src={teacher?.image ?? placeholderUrl}
                                     alt={teacherName}
                                 />
+
 
                                 <div>
                                     <p>{teacherName}</p>
